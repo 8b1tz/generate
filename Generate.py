@@ -1,13 +1,17 @@
 import base64
 import hashlib
 import random
+import secrets
 import string
 
 
 class Generator:
-    def __init__(self):
+    def __init__(self, initial_id=0, key_length=32):
         self.url_to_code = {}
         self.code_to_url = {}
+        self.current_id = initial_id
+        self.key_length = key_length
+        self.characters_cript = string.ascii_letters + string.digits
 
     def generate_short_url(self, long_url):
         if long_url in self.url_to_code:
@@ -43,6 +47,16 @@ class Generator:
         password = ''.join(random.choice(characters) for _ in range(length))
         return password
     
+    def generate_unique_id(self):
+        unique_id = self.current_id
+        self.current_id += 1
+        return unique_id
+    
+    def generate_key(self):
+        key = ''.join(secrets.choice(self.characters_cript) for _ in
+                      range(self.key_length))
+        return key
+    
 
 if __name__ == "__main__":
     gerador = Generator()
@@ -58,3 +72,11 @@ if __name__ == "__main__":
     print(codigo_curto_1)
     print(codigo_curto_2)
     print(codigo_curto_3)
+
+    for _ in range(5):
+        new_id = gerador.generate_unique_id()
+        print(f"Novo ID exclusivo gerado: {new_id}")
+
+    for _ in range(5):
+        new_key = gerador.generate_key()
+        print(f"New unique cryptographic key: {new_key}")
