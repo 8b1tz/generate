@@ -1,26 +1,60 @@
+import base64
+import hashlib
 import random
 import string
 
 
-def gerar_senha(comprimento=12, incluir_maiusculas=True, incluir_numeros=True, 
-                incluir_simbolos=True):
-    grupos_de_caracteres = {
-        string.ascii_letters: incluir_maiusculas,
-        string.digits: incluir_numeros,
-        string.punctuation: incluir_simbolos,
-    }
+class Generator:
+    def __init__(self):
+        self.url_to_code = {}
+        self.code_to_url = {}
 
-    caracteres = ''.join(caracteres for caracteres, value in
-                         grupos_de_caracteres.items() if value)
+    def generate_short_url(self, long_url):
+        if long_url in self.url_to_code:
+            return self.url_to_code[long_url]
+
+        hash_md5 = hashlib.md5(long_url.encode())
+        short_code = base64.urlsafe_b64encode(hash_md5.digest()[:6]).decode()
+
+        while short_code in self.code_to_url:
+            hash_md5.update(b'x')
+            short_code = base64.urlsafe_b64encode(hash_md5.digest()[:6])\
+                .decode()
+
+        self.url_to_code[long_url] = short_code
+        self.code_to_url[short_code] = long_url
+
+        return f'www.bitshn.com/{short_code}'
     
-    if not caracteres:
-        raise ValueError("Não pode ser tudo False")
+    def generate_password(self, length=12, include_uppercase=True,
+                          include_numbers=True, include_symbols=True):
+        character_groups = {
+            string.ascii_letters: include_uppercase,
+            string.digits: include_numbers,
+            string.punctuation: include_symbols,
+        }
 
-    senha = ''.join(random.choice(caracteres) for _ in range(comprimento))
-    return senha
+        characters = ''.join(characters for characters, value in
+                             character_groups.items() if value)
 
+        if not characters:
+            raise ValueError("At least one character group must be included")
+
+        password = ''.join(random.choice(characters) for _ in range(length))
+        return password
+    
 
 if __name__ == "__main__":
-    senha_segura = gerar_senha(comprimento=14, incluir_maiusculas=True, 
-                               incluir_numeros=True, incluir_simbolos=True)
-    print(senha_segura)
+    gerador = Generator()
+
+    url_longa_1 = "https://www.example.com/pagina1"
+    url_longa_2 = "https://www.example.com/pagina2"
+    url_longa_3 = "https://www.example.com/pagina3"
+
+    codigo_curto_1 = gerador.generate_short_url(url_longa_1)
+    codigo_curto_2 = gerador.generate_short_url(url_longa_2)
+    codigo_curto_3 = gerador.generate_short_url(url_longa_3)
+
+    print(codigo_curto_1)
+    print(codigo_curto_2)
+    print(codigo_curto_3)
